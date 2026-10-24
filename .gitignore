@@ -1,0 +1,8 @@
+node_modules/
+react/dist/
+react_dist/
+data/
+*.pyc
+__pycache__/
+.env
+venv/

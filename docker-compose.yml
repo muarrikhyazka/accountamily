@@ -1,0 +1,11 @@
+services:
+  accountamily:
+    build: .
+    image: accountamily:latest
+    container_name: accountamily
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "5010:5000"
+    volumes:
+      - ./data:/app/data
