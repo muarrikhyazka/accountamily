@@ -1203,6 +1203,31 @@ def delete_keyword(kid):
 
 
 # ---------- Super admin ----------
+@app.get("/api/admin/stats")
+@admin_required
+def admin_platform_stats():
+    """Platform-wide numbers for the super admin landing page - total
+    accounts, active vs disabled, signups over time, connected bots."""
+    conn = get_db()
+    totals = conn.execute(
+        """SELECT COUNT(*) as total,
+                  SUM(CASE WHEN is_disabled=0 THEN 1 ELSE 0 END) as active,
+                  SUM(CASE WHEN is_disabled=1 THEN 1 ELSE 0 END) as disabled
+           FROM users""").fetchone()
+    spending_total = conn.execute("SELECT COUNT(*) as n, COALESCE(SUM(amount),0) as total FROM spending").fetchone()
+    by_platform = [dict(r) for r in conn.execute(
+        "SELECT platform, COUNT(*) as n FROM integrations WHERE enabled=1 GROUP BY platform")]
+    signups = [dict(r) for r in conn.execute(
+        "SELECT substr(created_at,1,10) as day, COUNT(*) as n FROM users GROUP BY day ORDER BY day DESC LIMIT 30")]
+    conn.close()
+    return jsonify({
+        "accounts": {"total": totals["total"], "active": totals["active"] or 0, "disabled": totals["disabled"] or 0},
+        "spending": {"count": spending_total["n"], "total": spending_total["total"]},
+        "integrations_by_platform": by_platform,
+        "signups_by_day": signups,
+    })
+
+
 @app.get("/api/admin/accounts")
 @admin_required
 def admin_list_accounts():

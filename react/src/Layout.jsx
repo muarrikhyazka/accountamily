@@ -8,7 +8,7 @@ import { MONTH_NAMES } from './api'
 import QuickAddSpending from './QuickAddSpending.jsx'
 import { IconDashboard, IconBudget, IconSpending, IconAssets, IconSetup, IconLogout, IconCollapse, IconExpand, IconSun, IconMoon, IconPlus, IconGuide, IconLink, IconShield } from './icons.jsx'
 
-const links = [
+const tenantLinks = [
   { to: '/', label: 'Dashboard', end: true, Icon: IconDashboard },
   { to: '/spending', label: 'Spending', Icon: IconSpending },
   { to: '/budgeting', label: 'Budgeting', Icon: IconBudget },
@@ -16,6 +16,13 @@ const links = [
   { to: '/setup', label: 'Setup', Icon: IconSetup },
   { to: '/integrations', label: 'Integrations', Icon: IconLink },
   { to: '/guide', label: 'Guide', Icon: IconGuide },
+]
+
+// Super admin manages the platform, not personal finances - own tenant
+// pages (budgeting/assets/spending/setup/integrations) are irrelevant noise.
+const adminLinks = [
+  { to: '/admin', label: 'Accounts', end: true, Icon: IconShield },
+  { to: '/admin/stats', label: 'Platform Stats', Icon: IconDashboard },
 ]
 
 const YEAR_RANGE = (() => {
@@ -48,7 +55,7 @@ export default function Layout() {
           {!collapsed && <span>{serverOnline ? 'Online' : `Offline${queueSize ? ` (${queueSize})` : ''}`}</span>}
         </div>
 
-        {!collapsed && (
+        {!collapsed && !user?.is_admin && (
           <div className="sidebar-filters">
             <label>
               <span>Year</span>
@@ -74,13 +81,15 @@ export default function Layout() {
         )}
 
         <ul>
-          <li>
-            <button className="nav-cta" onClick={() => setQuickAddOpen(true)} title="Add Spending">
-              <IconPlus />
-              {!collapsed && <span>Add Spending</span>}
-            </button>
-          </li>
-          {links.map(({ to, label, end, Icon }) => (
+          {!user?.is_admin && (
+            <li>
+              <button className="nav-cta" onClick={() => setQuickAddOpen(true)} title="Add Spending">
+                <IconPlus />
+                {!collapsed && <span>Add Spending</span>}
+              </button>
+            </li>
+          )}
+          {(user?.is_admin ? adminLinks : tenantLinks).map(({ to, label, end, Icon }) => (
             <li key={to}>
               <NavLink to={to} end={end} title={label}>
                 <Icon />
@@ -88,14 +97,6 @@ export default function Layout() {
               </NavLink>
             </li>
           ))}
-          {user?.is_admin && (
-            <li>
-              <NavLink to="/admin" title="Super Admin">
-                <IconShield />
-                {!collapsed && <span>Admin</span>}
-              </NavLink>
-            </li>
-          )}
         </ul>
         <div className="sidebar-footer">
           <button className="icon-btn theme-toggle" onClick={toggle} title={theme === 'light' ? 'Dark mode' : 'Light mode'}>

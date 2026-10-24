@@ -28,6 +28,7 @@ export const api = {
   adminAccounts: () => req('/admin/accounts'),
   adminUpdateAccount: (id, payload) => req(`/admin/accounts/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
   adminDeleteAccount: (id) => req(`/admin/accounts/${id}`, { method: 'DELETE' }),
+  adminStats: () => req('/admin/stats'),
   setup: () => req('/setup'),
   addCategory: (payload) => req('/categories', { method: 'POST', body: JSON.stringify(payload) }),
   updateCategory: (id, payload) => req(`/categories/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
