@@ -1267,6 +1267,28 @@ def _check_bot_token():
     return row["account_id"] if row else None
 
 
+# Internal only: lets the standalone bot-multiplexer process (bots/telegram_bot.py,
+# bots/discord_bot.py) discover every tenant's connected platform token without a
+# user session - protected by a separate service secret, never exposed to the web UI.
+SERVICE_TOKEN = os.environ.get("SERVICE_TOKEN", "")
+
+
+@app.get("/api/internal/integrations")
+def internal_list_integrations():
+    if not SERVICE_TOKEN or request.headers.get("X-Service-Token") != SERVICE_TOKEN:
+        return jsonify({"error": "forbidden"}), 403
+    platform = request.args.get("platform")
+    conn = get_db()
+    q = "SELECT account_id, platform, bot_token, platform_token, chat_id FROM integrations WHERE enabled=1 AND platform_token IS NOT NULL AND platform_token != ''"
+    params = []
+    if platform:
+        q += " AND platform=?"
+        params.append(platform)
+    rows = [dict(r) for r in conn.execute(q, params)]
+    conn.close()
+    return jsonify(rows)
+
+
 @app.get("/api/bot/config")
 def bot_config():
     """Bot adapter calls this on startup/poll to get this account's

@@ -9,3 +9,27 @@ services:
       - "5010:5000"
     volumes:
       - ./data:/app/data
+
+  telegram-bot:
+    build: ./bots
+    image: accountamily-telegram-bot:latest
+    container_name: accountamily-telegram-bot
+    restart: unless-stopped
+    environment:
+      BACKEND_URL: http://accountamily:5000
+      SERVICE_TOKEN: ${SERVICE_TOKEN}
+    command: python telegram_bot.py
+    depends_on:
+      - accountamily
+
+  discord-bot:
+    build: ./bots
+    image: accountamily-discord-bot:latest
+    container_name: accountamily-discord-bot
+    restart: unless-stopped
+    environment:
+      BACKEND_URL: http://accountamily:5000
+      SERVICE_TOKEN: ${SERVICE_TOKEN}
+    command: python discord_bot.py
+    depends_on:
+      - accountamily
