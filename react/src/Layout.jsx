@@ -3,7 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from './AuthContext.jsx'
 import { useYearMonth } from './YearContext.jsx'
 import { useOffline } from './OfflineContext.jsx'
-import { useTheme } from './ThemeContext.jsx'
+import { useTheme, THEMES } from './ThemeContext.jsx'
 import { MONTH_NAMES } from './api'
 import QuickAddSpending from './QuickAddSpending.jsx'
 import { IconDashboard, IconBudget, IconSpending, IconAssets, IconSetup, IconLogout, IconCollapse, IconExpand, IconSun, IconMoon, IconPlus, IconGuide, IconLink, IconShield } from './icons.jsx'
@@ -36,7 +36,7 @@ export default function Layout() {
   const { logout, user } = useAuth()
   const { year, setYear, month, setMonth, valueMax, setValueMax } = useYearMonth()
   const { serverOnline, queueSize } = useOffline()
-  const { theme, toggle } = useTheme()
+  const { theme, setTheme } = useTheme()
   const [collapsed, setCollapsed] = useState(false)
   const [quickAddOpen, setQuickAddOpen] = useState(false)
 
@@ -99,9 +99,24 @@ export default function Layout() {
           ))}
         </ul>
         <div className="sidebar-footer">
-          <button className="icon-btn theme-toggle" onClick={toggle} title={theme === 'light' ? 'Dark mode' : 'Light mode'}>
-            {theme === 'light' ? <IconMoon /> : <IconSun />}
-          </button>
+          {!collapsed ? (
+            <select
+              className="theme-select"
+              value={theme}
+              onChange={e => setTheme(e.target.value)}
+              title="Theme"
+            >
+              {THEMES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+            </select>
+          ) : (
+            <button
+              className="icon-btn theme-toggle"
+              onClick={() => setTheme(THEMES[(THEMES.findIndex(t => t.id === theme) + 1) % THEMES.length].id)}
+              title="Cycle theme"
+            >
+              {theme === 'dark' ? <IconSun /> : <IconMoon />}
+            </button>
+          )}
           {!collapsed && <span>{user?.display_name}</span>}
           <button className="icon-btn logout-btn" onClick={logout} title="Logout"><IconLogout /></button>
         </div>
