@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { api, setCurrency } from './api'
+import { api, setCurrency, fetchFxRates } from './api'
 
 const AuthCtx = createContext(null)
 
@@ -7,6 +7,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(undefined) // undefined=loading, null=anon, obj=logged in
 
   useEffect(() => {
+    fetchFxRates() // once per app load; formatRupiah() uses whatever lands here
     api.me().then(d => {
       if (d.authenticated) setCurrency(d.currency)
       setUser(d.authenticated ? d : null)
@@ -26,13 +27,6 @@ export function AuthProvider({ children }) {
     setUser({ authenticated: true, username: email, display_name: d.display_name, currency: 'IDR', is_admin: false })
   }
 
-  async function loginGoogle(credential) {
-    const d = await api.loginGoogle(credential)
-    const me = await api.me()
-    setCurrency(me.currency)
-    setUser({ authenticated: true, username: me.username, display_name: d.display_name, currency: me.currency, is_admin: me.is_admin })
-  }
-
   async function logout() {
     await api.logout().catch(() => {})
     setUser(null)
@@ -43,7 +37,7 @@ export function AuthProvider({ children }) {
     setUser(u => (u ? { ...u, currency: code } : u))
   }
 
-  return <AuthCtx.Provider value={{ user, login, signup, loginGoogle, logout, setUserCurrency }}>{children}</AuthCtx.Provider>
+  return <AuthCtx.Provider value={{ user, login, signup, logout, setUserCurrency }}>{children}</AuthCtx.Provider>
 }
 
 export const useAuth = () => useContext(AuthCtx)

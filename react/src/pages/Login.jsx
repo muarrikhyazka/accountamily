@@ -1,11 +1,9 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../AuthContext.jsx'
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
-
 export default function Login() {
-  const { login, signup, loginGoogle } = useAuth()
+  const { login, signup } = useAuth()
   const navigate = useNavigate()
   const [mode, setMode] = useState('login') // 'login' | 'signup'
   const [username, setUsername] = useState('')
@@ -13,31 +11,6 @@ export default function Login() {
   const [displayName, setDisplayName] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
-  const googleBtnRef = useRef(null)
-
-  // Render Google's own Sign-In button once GIS script + client id are ready.
-  // ponytail: assumes GIS script already loaded (index.html <script> tag);
-  // if it races on a slow connection the button just doesn't render - no login
-  // is blocked, email/password still works.
-  useEffect(() => {
-    if (!GOOGLE_CLIENT_ID || !window.google || !googleBtnRef.current) return
-    window.google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID,
-      callback: async (resp) => {
-        setError('')
-        setBusy(true)
-        try {
-          await loginGoogle(resp.credential)
-          navigate('/')
-        } catch (err) {
-          setError(err.message || 'Google login failed')
-        } finally {
-          setBusy(false)
-        }
-      },
-    })
-    window.google.accounts.id.renderButton(googleBtnRef.current, { theme: 'outline', size: 'large', width: 280 })
-  }, [])
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -60,16 +33,9 @@ export default function Login() {
   return (
     <div className="login-page">
       <form className="card login-card" onSubmit={handleSubmit}>
-        <h1>Accountamily</h1>
+        <h1>Kinkit</h1>
         <p className="muted">Money management for every household, anywhere</p>
         {error && <div className="error-box">{error}</div>}
-
-        {GOOGLE_CLIENT_ID && (
-          <>
-            <div ref={googleBtnRef} style={{ display: 'flex', justifyContent: 'center', margin: '0.5rem 0' }} />
-            <div className="muted" style={{ textAlign: 'center', fontSize: '0.8rem' }}>or</div>
-          </>
-        )}
 
         <label>
           Email

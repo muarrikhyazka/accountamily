@@ -6,9 +6,22 @@ import { IconClose } from '../icons.jsx'
 export default function Admin() {
   const [rows, setRows] = useState(null)
   const [error, setError] = useState('')
+  const [resetting, setResetting] = useState(false)
+  const [resetMsg, setResetMsg] = useState('')
 
   function load() { api.adminAccounts().then(setRows).catch(e => setError(e.message)) }
   useEffect(load, [])
+
+  async function resetDemoData() {
+    if (!confirm('Wipe and re-seed demo1/demo2 sample data with fresh randomized values? This cannot be undone.')) return
+    setResetting(true)
+    setResetMsg('')
+    try {
+      const d = await api.adminResetDemoData()
+      setResetMsg(`Reset: ${d.accounts_reset.map(a => a.email).join(', ')}`)
+      load()
+    } catch (e) { setError(e.message) } finally { setResetting(false) }
+  }
 
   async function toggleDisabled(row) {
     await api.adminUpdateAccount(row.id, { is_disabled: !row.is_disabled })
@@ -35,6 +48,13 @@ export default function Admin() {
       <h1>Super Admin</h1>
       <p className="muted">All accounts on this instance. Visible only to admins.</p>
       {error && <div className="error-box">{error}</div>}
+
+      <div className="card" style={{ marginBottom: '1rem' }}>
+        <button onClick={resetDemoData} disabled={resetting}>
+          {resetting ? 'Resetting...' : 'Reset Demo Data'}
+        </button>
+        {resetMsg && <span className="muted" style={{ marginLeft: '0.75rem' }}>{resetMsg}</span>}
+      </div>
 
       <div className="card">
         <table className="simple-table">

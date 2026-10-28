@@ -3,6 +3,12 @@
 
 Same multiplexing pattern as bots/telegram_bot.py: one process, many
 accounts, one discord.py Client per connected integration's bot token.
+
+Reload latency: a cheap GET /api/internal/integrations-version check runs
+every VERSION_CHECK_SECONDS (default 5s); the expensive full fetch+rebuild
+only runs when that version actually changed. ponytail: still polling, not
+true push - a webhook/SSE from the backend would remove the ~5s worst-case
+lag entirely; add it if that becomes noticeable.
 """
 import asyncio, json, logging, os, re
 from datetime import datetime, timezone, timedelta
@@ -15,7 +21,8 @@ logger = logging.getLogger("accountamily-discord")
 
 BACKEND_URL = os.environ["BACKEND_URL"]
 SERVICE_TOKEN = os.environ["SERVICE_TOKEN"]
-REFRESH_SECONDS = int(os.environ.get("REFRESH_SECONDS", "300"))
+REFRESH_SECONDS = int(os.environ.get("REFRESH_SECONDS", "300"))  # fallback full-rebuild cadence even if version never changes
+VERSION_CHECK_SECONDS = int(os.environ.get("VERSION_CHECK_SECONDS", "5"))
 TZ = timezone(timedelta(hours=7))
 
 AMOUNT_RE = re.compile(r"(\d[\d.,]*)\s*(k|rb|jt|ribu|juta)?", re.IGNORECASE)
@@ -112,8 +119,25 @@ async def run():
     clients = {}  # account_id -> (client, task)
     intents = discord.Intents.default()
     intents.message_content = True
+    last_version = None
+    last_full_rebuild = 0.0
+    loop = asyncio.get_event_loop()
 
     while True:
+        try:
+            version = backend_get("/api/internal/integrations-version").get("version")
+        except Exception as e:
+            logger.error(f"Could not fetch integrations version: {e}")
+            version = last_version  # assume unchanged, don't force a rebuild on transient errors
+
+        now = loop.time()
+        changed = version != last_version
+        if not changed and (now - last_full_rebuild) < REFRESH_SECONDS:
+            await asyncio.sleep(VERSION_CHECK_SECONDS)
+            continue
+        last_version = version
+        last_full_rebuild = now
+
         try:
             integrations = backend_get("/api/internal/integrations", params={"platform": "discord"})
         except Exception as e:
@@ -141,7 +165,7 @@ async def run():
                 await client.close()
                 task.cancel()
 
-        await asyncio.sleep(REFRESH_SECONDS)
+        await asyncio.sleep(VERSION_CHECK_SECONDS)
 
 
 if __name__ == "__main__":

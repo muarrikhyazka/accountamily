@@ -63,7 +63,7 @@ function IntegrationCard({ integration, onUpdate, onDelete }) {
         {saved && <span className="muted" style={{ color: 'var(--primary)' }}>Saved</span>}
       </div>
 
-      <h3 style={{ marginTop: '1rem' }}>Accountamily-issued secret</h3>
+      <h3 style={{ marginTop: '1rem' }}>Kinkit-issued secret</h3>
       <p className="muted">Give this to your bot process as <code>ACCOUNTAMILY_BOT_TOKEN</code> - it authenticates the bot's calls to your account, no separate login needed.</p>
       <CopyBlock text={integration.bot_token} />
     </div>
@@ -129,7 +129,7 @@ export default function Integrations() {
         <h2 style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
           <IconLink width={18} height={18} /> How it works
         </h2>
-        <p>Each platform you connect above gets its own secret token (<code>X-Bot-Token</code> header) tied only to your account. One shared bot process can serve every Accountamily user at once - it just looks up the right account from the token each message carries.</p>
+        <p>Each platform you connect above gets its own secret token (<code>X-Bot-Token</code> header) tied only to your account. One shared bot process can serve every Kinkit user at once - it just looks up the right account from the token each message carries.</p>
         <table className="simple-table" style={{ marginTop: '.8rem' }}>
           <thead><tr><th>Action</th><th>Method & path</th><th>Body / params</th></tr></thead>
           <tbody>

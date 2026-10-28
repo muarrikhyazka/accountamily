@@ -1,35 +1,61 @@
 services:
-  accountamily:
-    build: .
-    image: accountamily:latest
-    container_name: accountamily
+  postgres:
+    image: postgres:16-alpine
+    container_name: kinkit-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: kinkit
+      POSTGRES_USER: kinkit
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kinkit"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: backend-go/Dockerfile
+    image: kinkit-go:latest
+    container_name: kinkit
     restart: unless-stopped
     env_file: .env
+    environment:
+      DATABASE_URL: postgres://kinkit:${POSTGRES_PASSWORD}@postgres:5432/kinkit
     ports:
       - "5010:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
     volumes:
       - ./data:/app/data
 
   telegram-bot:
     build: ./bots
-    image: accountamily-telegram-bot:latest
-    container_name: accountamily-telegram-bot
+    image: kinkit-telegram-bot:latest
+    container_name: kinkit-telegram-bot
     restart: unless-stopped
     environment:
-      BACKEND_URL: http://accountamily:5000
+      BACKEND_URL: http://app:5000
       SERVICE_TOKEN: ${SERVICE_TOKEN}
     command: python telegram_bot.py
     depends_on:
-      - accountamily
+      - app
 
   discord-bot:
     build: ./bots
-    image: accountamily-discord-bot:latest
-    container_name: accountamily-discord-bot
+    image: kinkit-discord-bot:latest
+    container_name: kinkit-discord-bot
     restart: unless-stopped
     environment:
-      BACKEND_URL: http://accountamily:5000
+      BACKEND_URL: http://app:5000
       SERVICE_TOKEN: ${SERVICE_TOKEN}
     command: python discord_bot.py
     depends_on:
-      - accountamily
+      - app
+
+volumes:
+  pgdata:

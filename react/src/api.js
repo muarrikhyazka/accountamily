@@ -16,11 +16,11 @@ export const api = {
   ping: () => req('/ping'),
   login: (username, password) => req('/login', { method: 'POST', body: JSON.stringify({ username, password }) }),
   signup: (email, password, display_name) => req('/signup', { method: 'POST', body: JSON.stringify({ email, password, display_name }) }),
-  loginGoogle: (credential) => req('/login/google', { method: 'POST', body: JSON.stringify({ credential }) }),
   logout: () => req('/logout', { method: 'POST' }),
   me: () => req('/me'),
   updateSettings: (payload) => req('/me/settings', { method: 'PATCH', body: JSON.stringify(payload) }),
   currencies: () => req('/currencies'),
+  fxRates: () => req('/fx-rates'),
   integrations: () => req('/integrations'),
   addIntegration: (payload) => req('/integrations', { method: 'POST', body: JSON.stringify(payload) }),
   updateIntegration: (id, payload) => req(`/integrations/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
@@ -29,6 +29,7 @@ export const api = {
   adminUpdateAccount: (id, payload) => req(`/admin/accounts/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
   adminDeleteAccount: (id) => req(`/admin/accounts/${id}`, { method: 'DELETE' }),
   adminStats: () => req('/admin/stats'),
+  adminResetDemoData: () => req('/admin/reset-demo-data', { method: 'POST' }),
   setup: () => req('/setup'),
   addCategory: (payload) => req('/categories', { method: 'POST', body: JSON.stringify(payload) }),
   updateCategory: (id, payload) => req(`/categories/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
@@ -73,10 +74,12 @@ export const api = {
   summary: (year, month) => req(`/summary?year=${year}&month=${month}`),
 }
 
-// Display-only currency formatting (no FX conversion - amounts are stored
-// as entered, this only changes how they're shown). AuthContext calls
-// setCurrency() once /api/me resolves; defaults to IDR before that.
+// Currency formatting WITH real FX conversion. Amounts are always stored in
+// IDR; _fxRates (fetched once on app load, see fetchFxRates/AuthContext)
+// holds { IDR: 1, USD: 0.000055, ... } from the backend's cached FX rates.
+// formatRupiah converts IDR -> selected currency before formatting.
 let _currency = { code: 'IDR', symbol: 'Rp', locale: 'id-ID' }
+let _fxRates = { IDR: 1 }
 const CURRENCY_META = {
   IDR: { symbol: 'Rp', locale: 'id-ID' }, USD: { symbol: '$', locale: 'en-US' },
   EUR: { symbol: '\u20ac', locale: 'de-DE' }, GBP: { symbol: '\u00a3', locale: 'en-GB' },
@@ -88,9 +91,21 @@ export function setCurrency(code) {
   const meta = CURRENCY_META[code] || CURRENCY_META.IDR
   _currency = { code: code || 'IDR', ...meta }
 }
+// Call once on app load (AuthContext) to populate the FX table used below.
+export async function fetchFxRates() {
+  try {
+    const d = await api.fxRates()
+    if (d?.rates) _fxRates = d.rates
+  } catch { /* keep previous/default rates (IDR-only) on failure */ }
+}
 export function formatRupiah(n) {
-  const v = Math.round(Number(n) || 0)
-  return _currency.symbol + v.toLocaleString(_currency.locale)
+  const idr = Number(n) || 0
+  const rate = _fxRates[_currency.code] ?? (_currency.code === 'IDR' ? 1 : null)
+  // ponytail: no rate cached/fetched yet (or code unknown) -> show as IDR rather than a wrong number
+  const v = Math.round(rate != null ? idr * rate : idr)
+  const symbol = rate != null ? _currency.symbol : CURRENCY_META.IDR.symbol
+  const locale = rate != null ? _currency.locale : CURRENCY_META.IDR.locale
+  return symbol + v.toLocaleString(locale)
 }
 
 export const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']

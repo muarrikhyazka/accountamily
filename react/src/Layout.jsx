@@ -44,7 +44,7 @@ export default function Layout() {
     <div className="app-shell">
       <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-top">
-          {!collapsed && <div className="brand">Accountamily</div>}
+          {!collapsed && <div className="brand">Kinkit</div>}
           <button className="icon-btn collapse-toggle" onClick={() => setCollapsed(c => !c)} title={collapsed ? 'Expand' : 'Collapse'}>
             {collapsed ? <IconExpand /> : <IconCollapse />}
           </button>
