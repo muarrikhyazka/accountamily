@@ -162,3 +162,13 @@ CREATE TABLE IF NOT EXISTS category_keywords (
     category TEXT NOT NULL,
     UNIQUE(account_id, keyword)
 );
+
+-- Gamification: one row per account. Points earned by logging spending
+-- (kept simple - no separate ledger table since we only need running
+-- totals + a daily streak, not a full history of point events).
+CREATE TABLE IF NOT EXISTS user_points (
+    account_id BIGINT PRIMARY KEY REFERENCES users(id),
+    points BIGINT NOT NULL DEFAULT 0,
+    streak_days INTEGER NOT NULL DEFAULT 0,
+    last_log_date DATE
+);

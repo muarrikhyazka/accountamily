@@ -14,6 +14,7 @@ import Guide from './pages/Guide.jsx'
 import Integrations from './pages/Integrations.jsx'
 import Admin from './pages/Admin.jsx'
 import AdminStats from './pages/AdminStats.jsx'
+import TVView from './pages/TVView.jsx'
 
 function Private({ children }) {
   const { user } = useAuth()
@@ -34,6 +35,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/tv" element={<Private><TVView /></Private>} />
       <Route path="/" element={<Private><Layout /></Private>}>
         <Route index element={<AdminGuard><Dashboard /></AdminGuard>} />
         <Route path="budgeting" element={<AdminGuard><Budgeting /></AdminGuard>} />

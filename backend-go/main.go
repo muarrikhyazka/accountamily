@@ -77,7 +77,8 @@ func main() {
 		})
 		RegisterAuthRoutes(api, app)     // login/signup/me/logout/password-reset/verify-email
 		RegisterFinanceRoutes(api, app)  // spending/budgeting/assets/setup/categories/accounts/income-sources/reports/trend/fx-rates
-		RegisterAdminRoutes(api, app)    // admin accounts/stats/reset-demo-data + bot (/api/bot/*) + internal (/api/internal/*) + integrations CRUD
+		RegisterAdminRoutes(api, app)    // «redacted-vault-secret» accounts/stats/reset-demo-data + bot (/api/bot/*) + internal (/api/internal/*) + integrations CRUD
+		RegisterGamificationRoutes(api, app) // points/streak/badge
 	})
 
 	// SPA static files - serve react build, fallback to index.html for client routing

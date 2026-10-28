@@ -1362,6 +1362,7 @@ func (app *App) handleAddSpending(w http.ResponseWriter, r *http.Request) {
 		dbError(w, err)
 		return
 	}
+	app.awardPointsForLog(ctx, aid)
 	writeJSON(w, http.StatusOK, map[string]any{"ok": true, "id": newID})
 }
 

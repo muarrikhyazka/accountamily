@@ -560,6 +560,7 @@ func botAddSpending(w http.ResponseWriter, r *http.Request, app *App, aid int64)
 		jsonError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+	app.awardPointsForLog(ctx, aid)
 	writeJSON(w, http.StatusOK, map[string]any{"ok": true, "id": newID})
 }
 

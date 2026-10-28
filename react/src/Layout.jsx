@@ -6,6 +6,7 @@ import { useOffline } from './OfflineContext.jsx'
 import { useTheme, THEMES } from './ThemeContext.jsx'
 import { MONTH_NAMES } from './api'
 import QuickAddSpending from './QuickAddSpending.jsx'
+import GamificationBadge from './GamificationBadge.jsx'
 import { IconDashboard, IconBudget, IconSpending, IconAssets, IconSetup, IconLogout, IconCollapse, IconExpand, IconSun, IconMoon, IconPlus, IconGuide, IconLink, IconShield } from './icons.jsx'
 
 const tenantLinks = [
@@ -39,6 +40,7 @@ export default function Layout() {
   const { theme, setTheme } = useTheme()
   const [collapsed, setCollapsed] = useState(false)
   const [quickAddOpen, setQuickAddOpen] = useState(false)
+  const [gamiRefresh, setGamiRefresh] = useState(0)
 
   return (
     <div className="app-shell">
@@ -89,6 +91,9 @@ export default function Layout() {
               </button>
             </li>
           )}
+          {!user?.is_admin && (
+            <li><GamificationBadge collapsed={collapsed} refreshKey={gamiRefresh} /></li>
+          )}
           {(user?.is_admin ? adminLinks : tenantLinks).map(({ to, label, end, Icon }) => (
             <li key={to}>
               <NavLink to={to} end={end} title={label}>
@@ -118,13 +123,14 @@ export default function Layout() {
             </button>
           )}
           {!collapsed && <span>{user?.display_name}</span>}
+          {!collapsed && <a href="/tv" target="_blank" rel="noopener" className="link-btn" title="Open TV / car display view">TV view</a>}
           <button className="icon-btn logout-btn" onClick={logout} title="Logout"><IconLogout /></button>
         </div>
       </aside>
       <main className="content">
         <Outlet />
       </main>
-      {quickAddOpen && <QuickAddSpending onClose={() => setQuickAddOpen(false)} onSaved={() => setQuickAddOpen(false)} />}
+      {quickAddOpen && <QuickAddSpending onClose={() => setQuickAddOpen(false)} onSaved={() => { setQuickAddOpen(false); setGamiRefresh(k => k + 1) }} />}
     </div>
   )
 }

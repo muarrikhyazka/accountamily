@@ -72,6 +72,7 @@ export const api = {
   yearsDayOfMonthAvg: (valueMax = 'all') => req(`/years/day-of-month-avg${valueMax !== 'all' ? `?value_max=${valueMax}` : ''}`),
   yearsDatemonthAvg: (valueMax = 'all') => req(`/years/datemonth-avg${valueMax !== 'all' ? `?value_max=${valueMax}` : ''}`),
   summary: (year, month) => req(`/summary?year=${year}&month=${month}`),
+  gamification: () => req('/gamification'),
 }
 
 // Currency formatting WITH real FX conversion. Amounts are always stored in
