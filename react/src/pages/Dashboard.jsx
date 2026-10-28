@@ -5,8 +5,9 @@ import { categoryColor, seriesColor } from '../categoryColor'
 import PieChart from '../PieChart.jsx'
 import BarChart from '../BarChart.jsx'
 import LineChart from '../LineChart.jsx'
+import CustomDashboard from './CustomDashboard.jsx'
 
-const TABS = ['Across Years', 'Year', 'Month', 'Week']
+const TABS = ['Across Years', 'Year', 'Month', 'Week', 'Custom']
 const WEEKDAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 export default function Dashboard() {
@@ -32,6 +33,7 @@ export default function Dashboard() {
       {tab === 'Year' && <YearTab />}
       {tab === 'Month' && <MonthTab />}
       {tab === 'Week' && <WeekTab />}
+      {tab === 'Custom' && <CustomDashboard />}
     </div>
   )
 }

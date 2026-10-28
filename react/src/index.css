@@ -366,3 +366,10 @@ tbody tr:hover { background: #fafafa; }
   .card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; page-break-inside: avoid; }
   body { background: #fff; color: #000; }
 }
+
+/* ---- custom dashboard (drag-drop widgets) ---- */
+.custom-widget { cursor: grab; }
+.custom-widget:active { cursor: grabbing; }
+.custom-widget-controls { display: flex; align-items: center; gap: .6rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.custom-widget-controls select { flex: 1; min-width: 160px; }
+.drag-handle { cursor: grab; color: var(--muted); font-size: 1.1rem; user-select: none; }
