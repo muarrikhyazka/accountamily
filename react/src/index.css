@@ -356,3 +356,13 @@ tbody tr:hover { background: #fafafa; }
 
 .category-select { display: inline-flex; align-items: center; gap: .4rem; }
 .category-select .cat-dot { flex-shrink: 0; }
+
+/* ---- print / PDF export ---- */
+@media print {
+  .sidebar, .page-header button, .export-pdf-btn, .tabs, .pagination, .quick-add-row button,
+  .collapse-toggle, .theme-select, .theme-toggle, .logout-btn, .conn-status { display: none !important; }
+  .app-shell { display: block; }
+  .content { padding: 0; overflow: visible; }
+  .card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; page-break-inside: avoid; }
+  body { background: #fff; color: #000; }
+}

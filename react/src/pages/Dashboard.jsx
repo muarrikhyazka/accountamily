@@ -19,6 +19,7 @@ export default function Dashboard() {
           <h1>Dashboard</h1>
           <p className="muted">Financial overview</p>
         </div>
+        <button className="export-pdf-btn secondary" onClick={() => window.print()}>Export PDF</button>
       </div>
 
       <div className="tabs">
